@@ -1,0 +1,113 @@
+<canvas id="gameCanvas" width="400" height="400"><canvas>
+<script>
+    const gameboard = document.getElementById("gameCanvas");
+    const gameboard_ctx = gameCanvas.getContext("2d");
+    let dx = 10;
+    let dy = 0;
+    let isGoingUp = false, isGoingDown = false, isGoingLeft = false; // used to check for invalid turns
+    let isGoingRight = true;
+    let hasGameEnded = false;
+    let f;
+    let food;
+
+    gameboard.style.border = "1px solid #000000";
+
+    let snake = [{x:200, y:200}, {x:190, y:200}, {x:180, y:200}, {x:170, y:200}, {x:160, y:200}]
+
+    function drawSnakePart(snakePart){
+        gameboard_ctx.fillStyle = "lightblue";
+        gameboard_ctx.strokeStyle = "darkblue";
+        gameboard_ctx.fillRect(snakePart.x, snakePart.y, 10, 10);
+        gameboard_ctx.strokeRect(snakePart.x, snakePart.y, 10, 10);
+    }
+
+    function drawAllSnakeParts(){
+        snake.forEach(drawSnakePart);
+    }
+
+    function moveSnake(){
+        const head = {x:snake[0].x + dx, y:snake[0].y + dy};
+        snake.unshift(head);
+        
+        const check = snake.slice(1).find(e => e.x == head.x && e.y == head.y);
+        if(check) hasGameEnded = true; 
+        
+        if(head.x == food.x && head.y == food.y){
+            generateFood();
+        }else{
+            snake.pop();
+        }
+        
+        
+    }
+
+    function checkIfOutOfBounds(){
+        if (snake[0].x >= 400 || snake[0].x <= 0 || snake[0].y >= 400 || snake[0].x <= 0){
+            hasGameEnded = true;
+        }
+    }
+
+    function clearCanvas(){
+        gameboard_ctx.clearRect(0,0, gameCanvas.width, gameCanvas.height);
+    }
+
+    function getRandomInt(min, max){
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateFood(){
+        food = {x: Math.round(getRandomInt(0, 400) / 10) * 10, y: Math.round(getRandomInt(0,400) / 10) * 10}
+    }
+
+    function drawFood(){
+        gameboard_ctx.fillRect(food.x, food.y, 10, 10);
+        gameboard_ctx.strokeRect(food.x, food.y, 10, 10);
+    }
+
+    function main(){
+        if(!hasGameEnded){
+            f = setTimeout(function onTick(){
+                clearCanvas();
+                moveSnake();
+                checkIfOutOfBounds();
+                if(!hasGameEnded){
+                    clearTimeout(f);
+                }
+                drawAllSnakeParts();
+                drawFood();
+                main();
+            }, 100);
+        } 
+    }
+    generateFood();
+    main();
+
+    document.addEventListener('keyup', (e) =>{
+        console.log(isGoingUp); 
+        if(e.code === "ArrowUp" && !isGoingDown){
+            isGoingDown=false, isGoingLeft=false, isGoingRight = false
+            isGoingUp = true
+            dy = -10
+            dx = 0
+        } 
+        else if(e.code === "ArrowDown" && !isGoingUp){
+            isGoingUp=false, isGoingLeft=false, isGoingRight = false
+            isGoingDown = true
+            dy = 10
+            dx = 0   
+        } 
+        else if(e.code === "ArrowRight" && !isGoingLeft){
+            isGoingLeft=false, isGoingUp=false, isGoingDown = false
+            isGoingRight = true
+            dx = 10
+            dy = 0
+        }
+        else if(e.code === "ArrowLeft" && !isGoingRight){
+            isGoingRight=false, isGoingUp=false, isGoingDown = false
+            isGoingLeft = true
+            dx = -10
+            dy = 0
+        }
+        
+    })
+</script>
